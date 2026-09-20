@@ -1,7 +1,7 @@
 'use client'
 
-       import { useEffect, useState } from 'react'
-   import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://xhanamgrezfiahhxhqqn.supabase.co'
 const supabaseAnonKey = 'sb_publishable_GXE8Q6ifnCuhqDT3rJOQfA_JQbSK9b9'
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
@@ -26,6 +26,7 @@ export default function Home() {
   const [activityMsg, setActivityMsg] = useState('')
 
   const [kegName, setKegName] = useState('')
+  const [employeeName, setEmployeeName] = useState('') // ← تم إضافة متغير اسم الموظفة هنا
   const [kegFile, setKegFile] = useState<File | null>(null)
   const [kegMsg, setKegMsg] = useState('')
 
@@ -136,11 +137,15 @@ export default function Home() {
         fileUrl = publicUrlData.publicUrl
       }
 
-      const { error: dbError } = await supabase.from('kindergartens').insert([{ name: kegName, file_url: fileUrl }])
+      // تم إضافة employee_name هنا ليتم حفظه في جدول الروضات
+      const { error: dbError } = await supabase.from('kindergartens').insert([
+        { name: kegName, employee_name: employeeName, file_url: fileUrl }
+      ])
       if (dbError) throw dbError
 
       setKegMsg('تم إرسال بيانات الروضة بنجاح! 🏡')
       setKegName('')
+      setEmployeeName('') // إعادة تعيين الحقل بعد الإرسال
       setKegFile(null)
     } catch (err: any) {
       setKegMsg('حدث خطأ: ' + err.message)
@@ -173,7 +178,7 @@ export default function Home() {
           )}
         </div>
       </div>
-      
+
       {showLoginModal && !session && (
         <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '25px' }}>
           <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>تسجيل دخول المشرفات 🔐</h3>
@@ -217,6 +222,7 @@ export default function Home() {
                 <thead>
                   <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1' }}>
                     <th style={{ padding: '10px', border: '1px solid #e2e8f0' }}>اسم الروضة</th>
+                    <th style={{ padding: '10px', border: '1px solid #e2e8f0' }}>اسم الموظفة</th>
                     <th style={{ padding: '10px', border: '1px solid #e2e8f0' }}>الملفات والبيانات</th>
                   </tr>
                 </thead>
@@ -224,6 +230,7 @@ export default function Home() {
                   {kindergartensData.map((item, index) => (
                     <tr key={index}>
                       <td style={{ padding: '10px', border: '1px solid #e2e8f0', fontWeight: 'bold' }}>{item.name || 'روضة'}</td>
+                      <td style={{ padding: '10px', border: '1px solid #e2e8f0' }}>{item.employee_name || '-'}</td>
                       <td style={{ padding: '10px', border: '1px solid #e2e8f0' }}>
                         <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '12px' }}>{JSON.stringify(item, null, 2)}</pre>
                       </td>
@@ -274,6 +281,17 @@ export default function Home() {
                   required 
                   style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} 
                 />
+
+                {/* مكعب اسم الموظفة الجديد تحت اسم الروضة */}
+                <input 
+                  type="text" 
+                  placeholder="اسم الموظفة" 
+                  value={employeeName} 
+                  onChange={(e) => setEmployeeName(e.target.value)} 
+                  required 
+                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} 
+                />
+
                 <input 
                   type="file" 
                   onChange={(e) => setKegFile(e.target.files?.[0] || null)} 
