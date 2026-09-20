@@ -23,7 +23,7 @@ export default function AddKindergartenWithUpload() {
 
     try {
       if (!file) {
-        throw new Error('الرجاء اختيار ملف الرفع')
+        throw new Error('الرجاء اختيار ملف الرفع');
       }
 
       // 1. إنشاء اسم فريد للملف لتجنب التعارض
@@ -67,7 +67,7 @@ export default function AddKindergartenWithUpload() {
       console.error("خطأ كامل", error);
       setMessage("حدث خطأ: " + (error?.message || JSON.stringify(error)));
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
