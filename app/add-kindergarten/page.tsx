@@ -44,7 +44,7 @@ export default async function AddKindergartenWithUpload() {
 
       // 3. جلب الرابط العام للملف المرفوع
       const { data: publicUrlData } = supabase.storage
-        .from('kindergarten-files')
+        .from('school-documents')
         .getPublicUrl(fileName)
 
       const fileUrl = publicUrlData.publicUrl
