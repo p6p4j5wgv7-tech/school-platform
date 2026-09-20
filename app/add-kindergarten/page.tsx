@@ -51,7 +51,7 @@ export default function AddKindergartenWithUpload() {
 
       // 4. حفظ بيانات الروضة مع رابط الملف في جدول قاعدة البيانات
       const { error: dbError } = await supabase
-        .from('kindergarten-files')
+        .from('kindergartens')
         .insert([
           {
             name,
