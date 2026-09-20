@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-export default function addkindergartenWithUpload() {
+export default function AddKindergartenWithUpload() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -21,29 +22,34 @@ export default function addkindergartenWithUpload() {
     setMessage('')
 
     try {
-      let fileUrl = ''
-
-      if (file) {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}.${fileExt}`
-
-        // رفع الملف إلى سلة التخزين المطابقة تماماً
-        const { error: uploadError } = await supabase.storage
-          .from('kindergarten-files')
-          .upload(fileName, file)
-
-        if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`)
-        }
-
-        const { data: publicUrlData } = supabase.storage
-          .from('kindergarten-files')
-          .getPublicUrl(fileName)
-
-        fileUrl = publicUrlData.publicUrl
+      if (!file) {
+        throw new Error('الرجاء اختيار ملف الرفع')
       }
 
-      // حفظ البيانات في الجدول بقاعدة البيانات
+      // 1. إنشاء اسم فريد للملف لتجنب التعارض
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+      // 2. رفع الملف إلى سلة Supabase Storage بدقة
+      const { error: uploadError } = await supabase.storage
+        .from('kindergarten-files')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      // 3. جلب الرابط العام للملف المرفوع
+      const { data: publicUrlData } = supabase.storage
+        .from('kindergarten-files')
+        .getPublicUrl(fileName)
+
+      const fileUrl = publicUrlData.publicUrl
+
+      // 4. حفظ بيانات الروضة مع رابط الملف في جدول قاعدة البيانات
       const { error: dbError } = await supabase
         .from('kindergartens')
         .insert([
@@ -52,20 +58,21 @@ export default function addkindergartenWithUpload() {
             description,
             location,
             file_url: fileUrl,
-          },
+          }
         ])
 
       if (dbError) {
-        throw new Error(`Database error: ${dbError.message}`)
+        throw dbError
       }
 
-      setMessage('kindergarten added and file uploaded successfully!')
+      setMessage('تم إضافة الروضة ورفع الملف بنجاح!')
       setName('')
       setDescription('')
       setLocation('')
       setFile(null)
+
     } catch (error: any) {
-      setMessage(`Error: ${error.message} - ${JSON.stringify(error)}`)
+      setMessage(`خطأ: ${error.message || JSON.stringify(error)}`)
     } finally {
       setLoading(false)
     }
@@ -73,60 +80,63 @@ export default function addkindergartenWithUpload() {
 
   return (
     <div style={{ padding: '40px', direction: 'rtl', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '20px', color: '#0070f3' }}>إضافة بيانات وملفات الروضة</h1>
-      {message && (
-        <div style={{ padding: '10px', marginBottom: '20px', background: message.includes('Error') ? '#ffe6e6' : '#e6ffe6', color: message.includes('Error') ? '#cc0000' : '#006600', borderRadius: '4px' }}>
-          {message}
-        </div>
-      )}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>اسم الروضة:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ width: '100%', padding: '10px', background: '#fff', border: '1px solid #ccc', borderRadius: '4px' }}
+      <h1 style={{ marginBottom: '20px', color: '#0070f3' }}>إضافة روضة وملفات الروضة</h1>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>اسم الروضة:</label>
+          <input 
+            type="text" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
             required
+            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>الوصف:</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{ width: '100%', padding: '10px', background: '#fff', border: '1px solid #ccc', borderRadius: '4px', height: '100px' }}
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>الوصف:</label>
+          <textarea 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>الموقع:</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            style={{ width: '100%', padding: '10px', background: '#fff', border: '1px solid #ccc', borderRadius: '4px' }}
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>الموقع:</label>
+          <input 
+            type="text" 
+            value={location} 
+            onChange={(e) =>setLocation(e.target.value)} 
+            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>ملف الروضة (Word أو غيره):</label>
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            style={{ width: '100%', padding: '10px', background: '#fff', border: '1px solid #ccc', borderRadius: '4px' }}
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>ملف الروضة (Word / PDF):</label>
+          <input 
+            type="file" 
+            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} 
+            required
+            style={{ width: '100%', padding: '10px' }}
           />
         </div>
 
-        <button
-          type="submit"
+        <button 
+          type="submit" 
           disabled={loading}
-          style={{ padding: '14px 20px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}
+          style={{ padding: '12px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}
         >
-          {loading ? 'جاري الحفظ والرفع...' : 'حفظ ورفع الملف'}
+          {loading ? 'جاري الرفع والحفظ...' : 'حفظ وإضافة'}
         </button>
       </form>
+
+      {message && (
+        <p style={{ marginTop: '20px', padding: '10px', backgroundColor: message.includes('خطأ') ? '#ffebee' : '#e8f5e9', color: message.includes('خطأ') ? '#c62828' : '#2e7d32', borderRadius: '5px' }}>
+          {message}
+        </p>
+      )}
     </div>
   )
 }
