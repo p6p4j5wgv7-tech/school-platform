@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default function AddKindergartenWithUpload() {
+export default async function AddKindergartenWithUpload() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -20,7 +20,7 @@ export default function AddKindergartenWithUpload() {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-
+  }
     try {
       if (!file) {
         throw new Error('الرجاء اختيار ملف الرفع')
@@ -72,11 +72,12 @@ export default function AddKindergartenWithUpload() {
       setFile(null)
 
     } catch (error: any) {
-      setMessage(`خطأ: ${error.message || JSON.stringify(error)}`)
-    } finally {
-      setLoading(false)
+     console.error("خطأ كامل",error);
+    setMessage("حدث خطأ:" +(error?.message || JSON.stringify(error)));
+     } finally {
+      setLoading(false);
     }
-  }
+  
 
   return (
     <div style={{ padding: '40px', direction: 'rtl', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
@@ -131,12 +132,12 @@ export default function AddKindergartenWithUpload() {
           {loading ? 'جاري الرفع والحفظ...' : 'حفظ وإضافة'}
         </button>
       </form>
-
+     
       {message && (
         <p style={{ marginTop: '20px', padding: '10px', backgroundColor: message.includes('خطأ') ? '#ffebee' : '#e8f5e9', color: message.includes('خطأ') ? '#c62828' : '#2e7d32', borderRadius: '5px' }}>
           {message}
         </p>
       )}
     </div>
-  )
+  );
 }
