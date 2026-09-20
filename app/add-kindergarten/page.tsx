@@ -53,7 +53,7 @@ export default function AddKindergartenWithUpload() {
 
       if (dbError) throw dbError;
 
-      setMessage('Kindergarten added and file uploaded successfully!');
+      setMessage('Kindergartens added and file uploaded successfully!');
       setName('');
       setDescription('');
       setLocation('');
