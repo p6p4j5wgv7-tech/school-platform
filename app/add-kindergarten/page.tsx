@@ -131,5 +131,5 @@ export default function AddKindergartenWithUpload() {
         </p>
       )}
     </div>
-  );
+  )
 }
