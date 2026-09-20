@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default async function AddKindergartenWithUpload() {
+export default function AddKindergartenWithUpload() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -20,7 +20,7 @@ export default async function AddKindergartenWithUpload() {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-  }
+
     try {
       if (!file) {
         throw new Error('الرجاء اختيار ملف الرفع')
@@ -30,9 +30,9 @@ export default async function AddKindergartenWithUpload() {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
 
-      // 2. رفع الملف إلى سلة Supabase Storage بدقة
+      // 2. رفع الملف إلى سلة Supabase Storage الصحيحة
       const { error: uploadError } = await supabase.storage
-        .from('school-documents')
+        .from('kindergarten-files')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: true
@@ -42,14 +42,7 @@ export default async function AddKindergartenWithUpload() {
         throw uploadError
       }
 
-      // 3. جلب الرابط العام للملف المرفوع
-      const { data: publicUrlData } = supabase.storage
-        .from('school-documents')
-        .getPublicUrl(fileName)
-
-      const fileUrl = publicUrlData.publicUrl
-
-      // 4. حفظ بيانات الروضة مع رابط الملف في جدول قاعدة البيانات
+      // 3. حفظ بيانات الروضة في جدول قاعدة البيانات
       const { error: dbError } = await supabase
         .from('kindergartens')
         .insert([
@@ -57,7 +50,6 @@ export default async function AddKindergartenWithUpload() {
             name,
             description,
             location,
-            file_url: fileUrl,
           }
         ])
 
@@ -72,12 +64,12 @@ export default async function AddKindergartenWithUpload() {
       setFile(null)
 
     } catch (error: any) {
-     console.error("خطأ كامل",error);
-    setMessage("حدث خطأ:" +(error?.message || JSON.stringify(error)));
-     } finally {
+      console.error("خطأ كامل", error);
+      setMessage("حدث خطأ: " + (error?.message || JSON.stringify(error)));
+    } finally {
       setLoading(false);
     }
-  
+  }
 
   return (
     <div style={{ padding: '40px', direction: 'rtl', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
@@ -109,7 +101,7 @@ export default async function AddKindergartenWithUpload() {
           <input 
             type="text" 
             value={location} 
-            onChange={(e) =>setLocation(e.target.value)} 
+            onChange={(e) => setLocation(e.target.value)} 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
           />
         </div>
@@ -132,7 +124,7 @@ export default async function AddKindergartenWithUpload() {
           {loading ? 'جاري الرفع والحفظ...' : 'حفظ وإضافة'}
         </button>
       </form>
-     
+
       {message && (
         <p style={{ marginTop: '20px', padding: '10px', backgroundColor: message.includes('خطأ') ? '#ffebee' : '#e8f5e9', color: message.includes('خطأ') ? '#c62828' : '#2e7d32', borderRadius: '5px' }}>
           {message}
