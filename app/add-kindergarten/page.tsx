@@ -59,7 +59,7 @@ export default function addkindergartenWithUpload() {
         throw new Error(`Database error: ${dbError.message}`)
       }
 
-      setMessage('Kindergarten added and file uploaded successfully!')
+      setMessage('kindergarten added and file uploaded successfully!')
       setName('')
       setDescription('')
       setLocation('')
