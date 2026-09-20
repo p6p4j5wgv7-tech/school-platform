@@ -65,7 +65,7 @@ export default function addkindergartenWithUpload() {
       setLocation('')
       setFile(null)
     } catch (error: any) {
-      setMessage(`Error: ${error.message}`)
+      setMessage(`Error: ${error.message} - ${JSON.stringify(error)}`)
     } finally {
       setLoading(false)
     }
