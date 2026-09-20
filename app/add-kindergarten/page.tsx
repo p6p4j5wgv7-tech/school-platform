@@ -32,7 +32,7 @@ export default async function AddKindergartenWithUpload() {
 
       // 2. رفع الملف إلى سلة Supabase Storage بدقة
       const { error: uploadError } = await supabase.storage
-        .from('kindergarten-files')
+        .from('school-documents')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: true
