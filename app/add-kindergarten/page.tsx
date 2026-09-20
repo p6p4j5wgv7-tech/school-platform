@@ -7,7 +7,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export default function AddkindergartenWithUpload() {
+export default function addkindergartenWithUpload() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -45,7 +45,7 @@ export default function AddkindergartenWithUpload() {
 
       // حفظ البيانات في الجدول بقاعدة البيانات
       const { error: dbError } = await supabase
-        .from('kindergarten')
+        .from('kindergartens')
         .insert([
           {
             name,
@@ -73,7 +73,7 @@ export default function AddkindergartenWithUpload() {
 
   return (
     <div style={{ padding: '40px', direction: 'rtl', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '20px', color: '#007of3' }}>إضافة روضة جديدة وتسيير الملفات</h1>
+      <h1 style={{ marginBottom: '20px', color: '#0070f3' }}>إضافة بيانات وملفات الروضة</h1>
       {message && (
         <div style={{ padding: '10px', marginBottom: '20px', background: message.includes('Error') ? '#ffe6e6' : '#e6ffe6', color: message.includes('Error') ? '#cc0000' : '#006600', borderRadius: '4px' }}>
           {message}
