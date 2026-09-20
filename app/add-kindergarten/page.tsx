@@ -7,7 +7,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export default function AddKindergartenWithUpload() {
+export default function AddkindergartenWithUpload() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -45,7 +45,7 @@ export default function AddKindergartenWithUpload() {
 
       // حفظ البيانات في الجدول بقاعدة البيانات
       const { error: dbError } = await supabase
-        .from('Kindergarten')
+        .from('kindergarten')
         .insert([
           {
             name,
