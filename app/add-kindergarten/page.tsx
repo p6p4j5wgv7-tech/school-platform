@@ -12,9 +12,23 @@ export default function AddKindergartenWithUpload() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
-  const [file, setFile] = useState<File | null>(null)
+  const [fileData, setFileData] = useState<string>('')
+  const [fileName, setFileName] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+
+  // تحويل الملف المرفوع إلى Base64 عشان نخزنه مباشرة في القاعدة
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = e.target.files?.[0]
+    if (uploadedFile) {
+      setFileName(uploadedFile.name)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFileData(reader.result as string)
+      }
+      reader.readAsDataURL(uploadedFile)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,33 +36,20 @@ export default function AddKindergartenWithUpload() {
     setMessage('')
 
     try {
-      if (!file) {
+      if (!fileData) {
         setMessage('الرجاء اختيار ملف الرفع')
         setLoading(false)
         return
       }
 
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('school-documents')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        })
-
-      if (uploadError) {
-        throw uploadError
-      }
-
+      // حفظ البيانات والملف مباشرة في جدول kindergartens
       const { error: dbError } = await supabase
         .from('kindergartens')
         .insert([
           {
             school_name: name,
             title: description,
-            file_path: fileName,
+            file_path: fileData, // تخزين الملف كبيانات نصية
           }
         ])
 
@@ -56,15 +57,16 @@ export default function AddKindergartenWithUpload() {
         throw dbError
       }
 
-      setMessage('تم إضافة الروضة ورفع الملف بنجاح!')
+      setMessage('تم إضافة الروضة وحفظ الملف في قاعدة البيانات بنجاح!')
       setName('')
       setDescription('')
       setLocation('')
-      setFile(null)
+      setFileData('')
+      setFileName('')
 
     } catch (error: any) {
       console.error("خطأ كامل", error)
-      setMessage("حدث خطأ أثناء التنفيذ")
+      setMessage("حدث خطأ أثناء الحفظ: " + (error.message || ''))
     } finally {
       setLoading(false)
     }
@@ -109,10 +111,11 @@ export default function AddKindergartenWithUpload() {
           <label style={{ display: 'block', marginBottom: '5px' }}>ملف الروضة (Word / PDF):</label>
           <input 
             type="file" 
-            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} 
+            onChange={handleFileChange} 
             required
             style={{ width: '100%', padding: '10px' }}
           />
+          {fileName && <p style={{ fontSize: '12px', color: 'green', marginTop: '5px' }}>تم اختيار الملف: {fileName}</p>}
         </div>
 
         <button 
@@ -120,7 +123,7 @@ export default function AddKindergartenWithUpload() {
           disabled={loading}
           style={{ padding: '12px', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}
         >
-          {loading ? 'جاري الرفع والحفظ...' : 'حفظ وإضافة'}
+          {loading ? 'جاري الحفظ...' : 'حفظ وإضافة'}
         </button>
       </form>
 
