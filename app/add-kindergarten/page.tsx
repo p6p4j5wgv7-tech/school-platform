@@ -23,9 +23,9 @@ export default function AddKindergartenWithUpload() {
 
     try {
       if (!file) {
-        setMessage('الرجاء اختيار ملف الرفع')
-        setLoading(false)
-        return
+        setMessage('الرجاء اختيار ملف الرفع');
+        setLoading(false);
+        return;
       }
 
       // 1. إنشاء اسم فريد للملف لتجنب التعارض
@@ -67,7 +67,7 @@ export default function AddKindergartenWithUpload() {
 
     } catch (error: any) {
       console.error("خطأ كامل", error)
-      setMessage("حدث خطأ: " + (error?.message || JSON.stringify(error)))
+      setMessage("حدث خطأ: " )
     } finally {
       setLoading(false)
     }
