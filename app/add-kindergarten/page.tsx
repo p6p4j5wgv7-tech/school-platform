@@ -17,7 +17,7 @@ export default function AddKindergartenWithUpload() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
-  // تحويل الملف المرفوع إلى Base64 عشان نخزنه مباشرة في القاعدة
+  // هنا دالة handleFileChange في السطر 18 تقريباً لتحويل الملف إلى Base64
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0]
     if (uploadedFile) {
@@ -42,14 +42,13 @@ export default function AddKindergartenWithUpload() {
         return
       }
 
-      // حفظ البيانات والملف مباشرة في جدول kindergartens
       const { error: dbError } = await supabase
         .from('kindergartens')
         .insert([
           {
             school_name: name,
             title: description,
-            file_path: fileData, // تخزين الملف كبيانات نصية
+            file_path: fileData,
           }
         ])
 
