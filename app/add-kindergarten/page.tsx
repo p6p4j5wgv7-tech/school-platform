@@ -49,9 +49,9 @@ export default function AddKindergartenWithUpload() {
         .from('kindergartens')
         .insert([
           {
-            name,
-            description,
-            location,
+             schoool_name :name,
+             title:description,
+            file_path: fileName,
           }
         ])
 
