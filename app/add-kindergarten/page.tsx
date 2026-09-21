@@ -1,5 +1,7 @@
 'use client'
+
 export const dynamic = 'force-dynamic'
+
 import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
@@ -23,16 +25,14 @@ export default function AddKindergartenWithUpload() {
 
     try {
       if (!file) {
-        setMessage('الرجاء اختيار ملف الرفع');
-        setLoading(false);
-        return;
+        setMessage('الرجاء اختيار ملف الرفع')
+        setLoading(false)
+        return
       }
 
-      // 1. إنشاء اسم فريد للملف لتجنب التعارض
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
 
-      // 2. رفع الملف إلى سلة Supabase Storage الصحيحة
       const { error: uploadError } = await supabase.storage
         .from('school-documents')
         .upload(fileName, file, {
@@ -44,13 +44,12 @@ export default function AddKindergartenWithUpload() {
         throw uploadError
       }
 
-      // 3. حفظ بيانات الروضة في جدول قاعدة البيانات
       const { error: dbError } = await supabase
         .from('kindergartens')
         .insert([
           {
-             schoool_name :name,
-             title:description,
+            school_name: name,
+            title: description,
             file_path: fileName,
           }
         ])
@@ -67,7 +66,7 @@ export default function AddKindergartenWithUpload() {
 
     } catch (error: any) {
       console.error("خطأ كامل", error)
-      setMessage("حدث خطأ: " )
+      setMessage("حدث خطأ أثناء التنفيذ")
     } finally {
       setLoading(false)
     }
@@ -102,7 +101,6 @@ export default function AddKindergartenWithUpload() {
           <label style={{ display: 'block', marginBottom: '5px' }}>الموقع:</label>
           <input 
             type="text" 
-            
             value={location} 
             onChange={(e) => setLocation(e.target.value)} 
             style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
